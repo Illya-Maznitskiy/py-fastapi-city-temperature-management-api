@@ -6,6 +6,7 @@ class CityBase(BaseModel):
     additional_info: str
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 

@@ -4,7 +4,7 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from city_temp.city.schemas import City
+from city_temp.city.models import City as CityModel
 from city_temp.temperature.crud import (
     create_temperature,
     get_temperatures,
@@ -12,6 +12,7 @@ from city_temp.temperature.crud import (
 )
 from city_temp.temperature.schemas import Temperature
 from database import SessionLocal
+
 
 load_dotenv()
 
@@ -36,41 +37,57 @@ def get_all_temperatures(
     return get_temperatures(db=db, skip=skip, limit=limit)
 
 
-async def fetch_temperature_for_city(city: City):
+async def fetch_temperature_for_city(city):
+    print(f"Fetching temperature for city: {city.name}")
+
     async with httpx.AsyncClient() as client:
         url = (
             f"https://api.openweathermap.org/data/2.5/weather?q={city.name}"
             f"&appid={API_KEY}&units=metric/"
         )
         response = await client.get(url)
+
         if response.status_code == 200:
             data = response.json()
             temperature = data["main"]["temp"]
+            print(f"Fetched temperature for {city.name}: {temperature}")
             return temperature
+
         else:
-            raise HTTPException(
-                status_code=500,
-                detail=f"Failed to fetch temperature for {city.name}",
+            print(
+                f"Failed to fetch temperature for {city.name}. "
+                f"Status: {response.status_code}"
             )
+            return None
 
 
 @router.post("/temperatures/update/", response_model=list[Temperature])
 async def update_temperatures(db: Session = Depends(get_db)):
-    cities = db.query(City).all()
+    cities = db.query(CityModel).all()
     updated_records = []
+
     for city in cities:
         temperature = await fetch_temperature_for_city(city)
-        db_temperature = create_temperature(db, city, temperature)
-        updated_records.append(Temperature.from_orm(db_temperature))
+
+        if temperature:
+            db_temperature = create_temperature(db, city, temperature)
+            updated_records.append(Temperature.from_orm(db_temperature))
+
+        else:
+            print(f"Skipping update for the city: {city.name}")
+        print("\n")
+
     return updated_records
 
 
 @router.get("/temperatures/by_city/")
 def get_temperature_by_city(city_id: int, db: Session = Depends(get_db)):
     temperatures = get_temperatures_by_city(db=db, city_id=city_id)
+
     if not temperatures:
         raise HTTPException(
             status_code=404,
             detail="Temperature records not found for this city",
         )
+
     return temperatures

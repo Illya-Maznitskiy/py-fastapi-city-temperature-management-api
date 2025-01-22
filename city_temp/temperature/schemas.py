@@ -8,12 +8,13 @@ class TemperatureBase(BaseModel):
     temperature: float
 
     class Config:
+        from_attributes = True
         orm_mode = True
 
 
-class TemperatureCreate(BaseModel):
+class TemperatureCreate(TemperatureBase):
     pass
 
 
-class Temperature(BaseModel):
+class Temperature(TemperatureBase):
     id: int

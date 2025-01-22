@@ -1,11 +1,14 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, MetaData
 from sqlalchemy import pool
 
 from alembic import context
 
-from models import Base
+from database import Base
+from city_temp.city import models
+from city_temp.temperature import models
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

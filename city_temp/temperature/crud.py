@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 import datetime
 
-from models import City
-from models import Temperature
+from city_temp.city.models import City
+from city_temp.temperature.models import Temperature
 
 
 def create_temperature(db: Session, city: City, temperature: float):
