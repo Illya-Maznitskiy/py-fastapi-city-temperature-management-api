@@ -43,7 +43,7 @@ def city_detail(city_id: int, db: Session = Depends(get_db)):
     return db_city
 
 
-@router.put("/cities/{city_id}", response_model=City)
+@router.put("/cities/{city_id}/", response_model=City)
 def update_city(city_id: int, city: CityCreate, db: Session = Depends(get_db)):
     db_city = update_city_crud(db=db, city_id=city_id, city=city)
     if db_city is None:
