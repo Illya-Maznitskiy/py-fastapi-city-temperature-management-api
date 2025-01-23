@@ -35,7 +35,7 @@ def list_cities(
     return get_cities(db=db, skip=skip, limit=limit)
 
 
-@router.get("/cities/{city_id}", response_model=City)
+@router.get("/cities/{city_id}/", response_model=City)
 def city_detail(city_id: int, db: Session = Depends(get_db)):
     db_city = get_city_by_id(db=db, city_id=city_id)
     if db_city is None:
